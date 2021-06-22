@@ -1,18 +1,20 @@
 import Head from 'next/head';
 import React from 'react';
 import Header from '../components/Header';
-import { GetStaticProps, GetStaticPaths, GetServerSideProps } from 'next';
+import { GetServerSideProps } from 'next';
 import { getSession, useSession } from 'next-auth/client';
 import { Session } from 'next-auth';
 import Login from '../components/Login';
 import Sidebar from '../components/Sidebar';
 import Feed from '../components/Feed';
+import Widgets from '../components/Widgets';
+import { db } from '../firebase';
 
-const Home = (): JSX.Element => {
+const Home = ({ posts }): JSX.Element => {
 	const [session] = useSession();
 	if (!session) return <Login />;
 	return (
-		<div className='h-screen bg:gray-100 overflow-hidden'>
+		<div className='h-screen bg-gray-100 overflow-hidden'>
 			<Head>
 				<title>FB Clone</title>
 				<meta
@@ -24,23 +26,33 @@ const Home = (): JSX.Element => {
 			<Header />
 			<main className='flex'>
 				<Sidebar />
-				<Feed />
+				<Feed posts={posts} />
+				<Widgets />
 			</main>
 		</div>
 	);
 };
-// export const getStaticProps: GetStaticProps = async (context) => {};
 
-// export const getStaticPaths: GetStaticPaths = async () => {};
-
-export const getServerSideProps: GetServerSideProps<{
+const getServerSideProps: GetServerSideProps<{
 	session: Session | null;
 }> = async (context) => {
+	const posts = await db
+		.collection('posts')
+		.orderBy('timestamp', 'desc')
+		.get();
+
+	const docs = posts.docs.map((post) => ({
+		id: post.id,
+		...post.data(),
+		timestamp: null,
+	}));
+
 	return {
 		props: {
 			session: await getSession(context),
+			posts: docs,
 		},
 	};
 };
-
+export { getServerSideProps };
 export default Home;

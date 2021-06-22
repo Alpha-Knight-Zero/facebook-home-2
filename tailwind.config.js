@@ -1,5 +1,5 @@
 module.exports = {
-	mode: 'jit ',
+	mode: 'jit',
 	purge: [
 		'./pages/**/*.{js,ts,jsx,tsx}',
 		'./components/**/*.{js,ts,jsx,tsx}',
@@ -11,5 +11,5 @@ module.exports = {
 	variants: {
 		extend: {},
 	},
-	plugins: [],
+	plugins: [require('tailwind-scrollbar-hide')],
 };
